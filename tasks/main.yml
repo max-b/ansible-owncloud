@@ -3,13 +3,21 @@
   apt_repository: repo='deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} universe' state=present
   when: ansible_distribution == "Ubuntu"
 
-- name: Add ownCloud repo
+- name: Add ownCloud repo for Ubuntu
   apt_repository: repo='deb http://download.opensuse.org/repositories/isv:/ownCloud:/community/xUbuntu_{{ ansible_distribution_version }}/ /' state=present update_cache=yes
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= 12
 
-- name: Add ownCloud repo key
+- name: Add ownCloud repo for Debian
+  apt_repository: repo='deb http://download.opensuse.org/repositories/isv:/ownCloud:/community/Debian_{{ ansible_distribution_major_version }}.0/ /' state=present update_cache=yes
+  when: ansible_distribution == "Debian" and ansible_distribution_major_version >= 7
+
+- name: Add ownCloud repo key for Ubuntu
   apt_key: url='http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_{{ ansible_distribution_version }}/Release.key' state=present
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= 12
+
+- name: Add ownCloud repo key for Debian
+  apt_key: url='http://download.opensuse.org/repositories/isv:ownCloud:community/Debian_{{ ansible_distribution_major_version }}.0/Release.key' state=present
+  when: ansible_distribution == "Debian" and ansible_distribution_major_version >= 7
 
 - name: Install dependencies
   apt: pkg={{ item }} state=present
@@ -25,6 +33,13 @@
 - name: Install ownCloud
   apt: name=owncloud state=present force=yes
 
-- name: Adjust Apache docroot
-  replace: dest=/etc/apache2/sites-enabled/000-default.conf regexp='DocumentRoot /var/www/html' replace='DocumentRoot /var/www/owncloud'
+- name: Remove default apache sites-enabled config 
+  file: dest=/etc/apache2/sites-enabled/000-default state=absent
+
+- name: Add owncloud sites-available config 
+  template: src=apache-owncloud dest=/etc/apache2/sites-available/owncloud 
+  notify: reload apache
+
+- name: Symlink apache owncloud sites-available to sites-enabled
+  file: src=/etc/apache2/sites-available/owncloud dest=/etc/apache2/sites-enabled/owncloud state=link
   notify: reload apache

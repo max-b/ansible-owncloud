@@ -43,3 +43,23 @@
 - name: Symlink apache owncloud sites-available to sites-enabled
   file: src=/etc/apache2/sites-available/owncloud dest=/etc/apache2/sites-enabled/owncloud state=link
   notify: reload apache
+
+- name: ensure owncloud database is present
+  mysql_db:
+    name: owncloud
+
+- name: ensure owncloud database user is present
+  mysql_user:
+    name: owncloud
+    host: "{{ item }}"
+    password: "{{ owncloud_owncloud_mysql_password }}"
+    priv: owncloud.*:ALL
+  with_items:
+    - "%"
+    - localhost
+
+- name: update owncloud/config/autoconfig.php from template
+  template:
+    src: autoconfig.php
+    dest: /var/www/owncloud/config/autoconfig.php
+

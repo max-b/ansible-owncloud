@@ -8,5 +8,5 @@ $AUTOCONFIG = array(
   "dbtableprefix" => "",
   "adminlogin"    => "root",
   "adminpass"     => "{{ owncloud_owncloud_root_password }}",
-  /* "directory"     => "/var/www/owncloud/data", */
+  "directory"     => "{{ owncloud_owncloud_data_dir }}", 
 );

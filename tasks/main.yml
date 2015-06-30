@@ -63,3 +63,11 @@
     src: autoconfig.php
     dest: /var/www/owncloud/config/autoconfig.php
 
+
+- name: Add mount path if not there
+  file: path={{ owncloud_owncloud_data_dir}} state=directory owner=www-data group=www-data
+  when: owncloud_mount_drive
+
+- name: Add mounted drive if appropriate
+  mount: name={{ owncloud_owncloud_data_dir }} src='LABEL={{ owncloud_drive_label }}' opts='defaults,rw' fstype={{ owncloud_drive_fstype}} state=present
+  when: owncloud_mount_drive
